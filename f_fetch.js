@@ -1,23 +1,26 @@
 // Does not support Internet Explorer
 // FetchAsync('get', 'https://jsonplaceholder.typicode.com/posts', [{"a": 1}, {"asdasdads": 123232}]).then(res => console.log(res));
-const FetchAsync = async (method, url, headers, data = {}, cors = "cors", cache = "no-cache", credentials = "same-origin", redirect = "follow", referrerPolicy = "no-referrer") => {
-    // make sure the return always JSON
-    const reqHeaders = new Headers({
-        "Content-Type": "application/json"
-    });
+const FetchAsync = async (method, url, returnType = "json", headers, data = {}, cors = "cors", cache = "no-cache", credentials = "same-origin", redirect = "follow", referrerPolicy = "no-referrer") => {
+    returnType = returnType.toString().toLowerCase();
+    method = method.toString().toUpperCase();
+    const reqHeaders = new Headers();
+    if (returnType != "text" && returnType != "json" && returnType != "blob")
+        throw "Return Type must be Text, JSON, or Blob. Your requested return type was: " + returnType;
     // headers type
-    Array.isArray(headers) ? 
-    (
-        headers.forEach(el => {
-            reqHeaders.append(Object.keys(el), Object.values(el))
-        })
-    ) 
-    : 
-    (
-        reqHeaders.append(Object.keys(headers), Object.values(headers))
-    )
+    if (headers) {
+        Array.isArray(headers) ? 
+        (
+            headers.forEach(el => {
+                reqHeaders.append(Object.keys(el), Object.values(el))
+            })
+        ) 
+        : 
+        (
+            reqHeaders.append(Object.keys(headers), Object.values(headers))
+        )
+    }
     // Default options are marked with *
-    const response = method.toUpperCase() == "GET" || method.toUpperCase() == "HEAD"? 
+    const response = method == "GET" || method == "HEAD"? 
     (
         await fetch(url, {
             method: method, // *GET, POST, PUT, DELETE, etc.
@@ -32,7 +35,12 @@ const FetchAsync = async (method, url, headers, data = {}, cors = "cors", cache 
             if (!response.ok) {
                 return {Status: "Error", Message: "Server or Network might be not ok. Make sure you're connected to internet and the requested URL was right"}
             }
-            return response.json();
+            if (returnType == "json") return response.json();
+            else if (returnType == "text") return response.text();
+            else if (returnType == "blob") return response.blob();
+        })
+        .catch(e => {
+            return e;
         })
     ) : 
     (
@@ -50,29 +58,37 @@ const FetchAsync = async (method, url, headers, data = {}, cors = "cors", cache 
             if (!response.ok) {
                 return {Status: "Error", Message: "Server or Network might be not ok. Make sure you're connected to internet and the requested URL was right"}
             }
-            return response.json();
+            if (returnType == "json") return response.json();
+            else if (returnType == "text") return response.text();
+            else if (returnType == "blob") return response.blob();
+        })
+        .catch(e => {
+            return e;
         })
     );
     return await response; // parses JSON response into native JavaScript objects
 }
 
 //Slower
-const FetchSync = (method, url, headers, data = {}, cors = "cors", cache = "no-cache", credentials = "same-origin", redirect = "follow", referrerPolicy = "no-referrer") => {
-    const reqHeaders = new Headers({
-        "Content-Type": "application/json"
-    });
-    // headers type
-    Array.isArray(headers) ? 
-    (
-        headers.forEach(el => {
-            reqHeaders.append(Object.keys(el), Object.values(el))
-        })
-    ) 
-    : 
-    (
-        reqHeaders.append(Object.keys(headers), Object.values(headers))
-    )
-    const response = method.toUpperCase() == "GET" || method.toUpperCase() == "HEAD" ?
+const FetchSync = (method, url, returnType = "json", headers, data = {}, cors = "cors", cache = "no-cache", credentials = "same-origin", redirect = "follow", referrerPolicy = "no-referrer") => {
+    method = method.toString().toUpperCase();
+    returnType = returnType.toString().toLowerCase();
+    const reqHeaders = new Headers();
+    if (returnType != "text" && returnType != "json" && returnType != "blob")
+        throw "Return Type must be Text, JSON, or Blob. Your requested return type was: " + returnType;
+    if (headers) {
+        Array.isArray(headers) ? 
+        (
+            headers.forEach(el => {
+                reqHeaders.append(Object.keys(el), Object.values(el))
+            })
+        ) 
+        : 
+        (
+            reqHeaders.append(Object.keys(headers), Object.values(headers))
+        )
+    }
+    const response = method == "GET" || method == "HEAD" ?
     (
         fetch(url, {
                 method: method,
@@ -87,7 +103,12 @@ const FetchSync = (method, url, headers, data = {}, cors = "cors", cache = "no-c
                 if (!response.ok) {
                     return {Status: "Error", Message: "Server or Network might be not ok. Make sure you're connected to internet and the requested URL was right"}
                 }
-                return response.json();
+                if (returnType == "json") return response.json();
+                else if (returnType == "text") return response.text();
+                else if (returnType == "blob") return response.blob();
+            })
+            .catch(e => {
+                return e;
             })
     )
     :
@@ -106,7 +127,12 @@ const FetchSync = (method, url, headers, data = {}, cors = "cors", cache = "no-c
             if (!response.ok) {
                 return {Status: "Error", Message: "Server or Network might be not ok. Make sure you're connected to internet and the requested URL was right"}
             }
-            return response.json();
+            if (returnType == "json") return response.json();
+            else if (returnType == "text") return response.text();
+            else if (returnType == "blob") return response.blob();
+        })
+        .catch(e => {
+            return e;
         })
     )
     return response;
